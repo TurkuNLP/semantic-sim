@@ -40,7 +40,7 @@ if __name__=="__main__":
     bert_model=transformers.BertModel.from_pretrained(args.bert_model).eval().cuda()
     
     s_dataset=embed_data.SentenceDataset(sys.stdin,bert_tokenizer)
-    s_datareader=embed_data.fluid_batch(s_dataset,10000)#DataLoader(sp_dataset,collate_fn=embed_data.collate,batch_size=15)
+    s_datareader=embed_data.fluid_batch(s_dataset,12000)#DataLoader(sp_dataset,collate_fn=embed_data.collate,batch_size=15)
 
     with tqdm.tqdm() as pbar, torch.no_grad():
 
@@ -51,7 +51,9 @@ if __name__=="__main__":
             bsize=emb_src.shape[0]
             current_batches.append(emb_src)
             if len(current_batches)>1000:
-                torch.save(current_batches,f"{args.out}_{batch_idx:06d}.pt")
+                fname=f"{args.out}_{batch_idx:06d}.pt"
+                print("Saving",fname,flush=True)
+                torch.save(current_batches,fname)
                 current_batches=[]
             pbar.update(bsize)
             #print(bsize,end=" ",flush=True)
