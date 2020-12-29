@@ -33,6 +33,7 @@ if __name__=="__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--bert-model", default=None, help="BERT model name or path")
+    parser.add_argument("--out",default=None,help="File prefix for saved batches")
     args = parser.parse_args()
 
     bert_tokenizer=transformers.BertTokenizer.from_pretrained(args.bert_model)
@@ -41,13 +42,21 @@ if __name__=="__main__":
     s_dataset=embed_data.SentenceDataset(sys.stdin,bert_tokenizer)
     s_datareader=embed_data.fluid_batch(s_dataset,10000)#DataLoader(sp_dataset,collate_fn=embed_data.collate,batch_size=15)
 
-    with tqdm.tqdm() as pbar, open("/dev/stdout","wb") as f_out, torch.no_grad():
-        for batch in s_datareader:
+    with tqdm.tqdm() as pbar, torch.no_grad():
+
+        current_batches=[]
+        for batch_idx,batch in enumerate(s_datareader):
             emb_src=embed_batch(batch,bert_model)
             emb_src=emb_src.cpu()
             bsize=emb_src.shape[0]
-            torch.save(emb_src,f_out)
+            current_batches.append(emb_src)
+            if len(current_batches)>1000:
+                torch.save(current_batches,f"{args.out}_{batch_idx:06d}.pt")
+                current_batches=[]
             pbar.update(bsize)
             #print(bsize,end=" ",flush=True)
+        else:
+            if current_batches:
+                torch.save(current_batches,f"{args.out}_{batch_idx:06d}.pt")
     
 
