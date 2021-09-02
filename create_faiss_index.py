@@ -3,6 +3,8 @@ import torch
 import glob
 import random
 import tqdm
+import pickle
+import sys
 
 def random_sample_of_batches(batch_files,proportion):
     """Takes a random sample of batches from all batch_files
@@ -11,10 +13,17 @@ def random_sample_of_batches(batch_files,proportion):
     batch_files=list(batch_files)
     random.shuffle(batch_files)
     for b in tqdm.tqdm(batch_files):
-        batches=torch.load(b)
-        random.shuffle(batches)
-        batches=batches[:int(len(batches)*proportion)]
-        all_batches.extend(batches)
+        with open(b,"rb") as f:
+            while True:
+                try:
+                    sent_idx, embedding_batch = pickle.load(f)
+                    #do I want to keep it?
+                    if random.random()<proportion:
+                        all_batches.append(embedding_batch)
+                except: #no more batches
+                    break
+    random.shuffle(all_batches)
+    print("Got",len(all_batches),"random batches",file=sys.stderr,flush=True)
     return torch.vstack(all_batches)
 
 if __name__=="__main__":
@@ -29,13 +38,13 @@ if __name__=="__main__":
 
 
     if args.prepare_sample:
-        sampled=random_sample_of_batches(sorted(args.BATCHFILES),0.05)
+        sampled=random_sample_of_batches(sorted(args.BATCHFILES),0.5)
         torch.save(sampled,args.prepare_sample)
     elif args.train_faiss:
         assert len(args.BATCHFILES)==1, "Give one argument which is a .pt file produced by --prepare-sample"
 
         quantizer=faiss.IndexFlatL2(768)
-        index=faiss.IndexIVFPQ(quantizer,768,1024,48,8) #768 is bert size, 1024 is how many Voronoi cells we want, 48 is number of quantizers, and these are 8-bit
+        index=faiss.IndexIVFPQ(quantizer,768,1024,24,8) #768 is bert size, 1024 is how many Voronoi cells we want, 48 is number of quantizers, and these are 8-bit
         res=faiss.StandardGpuResources()
         index_gpu=faiss.index_cpu_to_gpu(res,0,index)
 
@@ -50,11 +59,16 @@ if __name__=="__main__":
         index=faiss.read_index(args.pretrained_index)
         res=faiss.StandardGpuResources()
         index_gpu=faiss.index_cpu_to_gpu(res,0,index)
-        all_batches=list(sorted(args.BATCHFILES)) #THESE MUST BE SORTED BY FILENAME OR ELSE STUFF GOES OUT OF ORDER!
+        all_batches=list(sorted(args.BATCHFILES)) 
         for batchfile in tqdm.tqdm(all_batches):
-            batches=torch.load(batchfile)
-            all_vectors=torch.vstack(batches)
-            index_gpu.add(all_vectors.numpy())
+            with open(batchfile,"rb") as f:
+                while True:
+                    try:
+                        line_idx,embedded_batch=pickle.load(f)
+                        index_gpu.add_with_ids(embedded_batch.numpy(),line_idx.numpy())
+                    except EOFError:
+                        break #no more batches in this file
+                    
         index_filled=faiss.index_gpu_to_cpu(index_gpu)
         faiss.write_index(index_filled,args.fill_faiss)
         print("Index has",index_filled.ntotal,"vectors. Done.")

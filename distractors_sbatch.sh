@@ -8,11 +8,6 @@
 #SBATCH --gres=gpu:v100:1,nvme:60
 #SBATCH --cpus-per-task=4
 
-
-
-
-
-
 module load python-data/3.7.6-1
 source /projappl/project_2000539/faiss_distractors/venv-faissgpu/bin/activate
 

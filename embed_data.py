@@ -24,10 +24,12 @@ def open_possibly_gz_file(f_or_name):
 
 class SentenceDataset(IterableDataset):
 
-    def __init__(self,f_in,bert_tokenizer):
+    def __init__(self,f_in,bert_tokenizer,thisjob=0,jobs=1):
         """f_in is either filename or open file"""
         self.data_src=open_possibly_gz_file(f_in)
         self.bert_tokenizer=bert_tokenizer
+        self.thisjob=thisjob
+        self.jobs=jobs
 
     def prep_text_sequence(self,txt):
         tok=self.bert_tokenizer.convert_tokens_to_ids(self.bert_tokenizer.tokenize(txt))[:510] #CUT TO 510
@@ -40,16 +42,16 @@ class SentenceDataset(IterableDataset):
     def yield_tokenized_sentences(self):
         """bert-tokenize and encode sentences from the data, yield as dictionaries"""
         for line_idx,line_src in enumerate(self.data_src):
-            line_src=line_src.rstrip("\n")
+            if line_idx % self.jobs == self.thisjob: #this line is mine!
+                line_src=line_src.rstrip("\n")
+                data_item={"line_idx":line_idx}
+                tok,enc,spec_token_mask,attention_mask,token_type_id=self.prep_text_sequence(line_src)
+                data_item["enc"]=enc
+                data_item["spec_token_mask"]=spec_token_mask
+                data_item["attention_mask"]=attention_mask
+                data_item["token_type_id"]=token_type_id
 
-            data_item={"line_idx":line_idx}
-            tok,enc,spec_token_mask,attention_mask,token_type_id=self.prep_text_sequence(line_src)
-            data_item["enc"]=enc
-            data_item["spec_token_mask"]=spec_token_mask
-            data_item["attention_mask"]=attention_mask
-            data_item["token_type_id"]=token_type_id
-
-            yield data_item
+                yield data_item
 
     def __iter__(self):
         return self.yield_tokenized_sentences()
