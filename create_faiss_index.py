@@ -12,16 +12,18 @@ def random_sample_of_batches(batch_files,proportion):
     all_batches=[]
     batch_files=list(batch_files)
     random.shuffle(batch_files)
-    for b in tqdm.tqdm(batch_files):
-        with open(b,"rb") as f:
-            while True:
-                try:
-                    sent_idx, embedding_batch = pickle.load(f)
-                    #do I want to keep it?
-                    if random.random()<proportion:
-                        all_batches.append(embedding_batch)
-                except: #no more batches
-                    break
+    with tqdm.tqdm() as pbar:
+        for b in batch_files:
+            with open(b,"rb") as f:
+                while True:
+                    try:
+                        sent_idx, embedding_batch = pickle.load(f)
+                        #do I want to keep it?
+                        if random.random()<proportion:
+                            all_batches.append(embedding_batch)
+                        pbar.update(embedding_batch.shape[0])
+                    except: #no more batches
+                        break
     random.shuffle(all_batches)
     print("Got",len(all_batches),"random batches",file=sys.stderr,flush=True)
     return torch.vstack(all_batches)
@@ -38,7 +40,7 @@ if __name__=="__main__":
 
 
     if args.prepare_sample:
-        sampled=random_sample_of_batches(sorted(args.BATCHFILES),0.5)
+        sampled=random_sample_of_batches(sorted(args.BATCHFILES),0.1)
         torch.save(sampled,args.prepare_sample)
     elif args.train_faiss:
         assert len(args.BATCHFILES)==1, "Give one argument which is a .pt file produced by --prepare-sample"

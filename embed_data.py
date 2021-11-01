@@ -50,7 +50,7 @@ class SentenceDataset(IterableDataset):
                 data_item["spec_token_mask"]=spec_token_mask
                 data_item["attention_mask"]=attention_mask
                 data_item["token_type_id"]=token_type_id
-
+                data_item["txt"]=line_src
                 yield data_item
 
     def __iter__(self):
@@ -64,6 +64,8 @@ def collate(itemlist):
     for k in "enc","attention_mask","spec_token_mask", "token_type_id":
         batch[k]=pad_with_zero([item[k] for item in itemlist])
     batch["line_idx"]=torch.LongTensor([item["line_idx"] for item in itemlist])
+    if "txt" in itemlist[0]:
+        batch["txt"]=list(item["txt"] for item in itemlist)
     return batch
 
 def pad_with_zero(vals):

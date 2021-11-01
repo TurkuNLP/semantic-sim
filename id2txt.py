@@ -3,6 +3,7 @@ import pickle
 import json
 import sys
 import tqdm
+import mmap_index
 
 def open_possibly_gz_file(f_or_name):
     if f_or_name is None:
@@ -24,7 +25,7 @@ if __name__=="__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--qry-sentences",nargs="+",help="File(s) with the sentences in the same order in which they were queried in print_nearest_...")
-    parser.add_argument("--sentencefiles",nargs="+",help="Files with the sentences in the same order as in the index. Can be (and probably is) gz files and must match the knn_ids")
+    parser.add_argument("--sentenceindex",help="File prefix with sentence mmappable index produced by mmap_index.py")
     parser.add_argument("--knn-ipkl",help="The ipkl file with the knn data")
     args = parser.parse_args()
 
@@ -36,25 +37,8 @@ if __name__=="__main__":
         f.close()
     print(f"Read {len(qry_sents)} q-sentences",file=sys.stderr,flush=True)
 
-    #Read all texts first, we will need these to be able to print the outcome
-    all_sents=[]
-    for fname in tqdm.tqdm(args.sentencefiles):
-        f=open_possibly_gz_file(fname)
-        all_sents.extend((l.strip() for l in f if l.strip()))
-        f.close()
-    print(f"Read {len(all_sents)} sentences",file=sys.stderr,flush=True)
+    qry=mmap_index.Qry(args.sentenceindex)
 
-    print(qry_sents[:5])
-    print()
-    print(all_sents[:5])
-
-    all_sents=set(all_sents)
-    found=0
-    for x in qry_sents:
-        if x in all_sents:
-            found+=1
-    print(f"Found {found} / {len(qry_sents)}")
-    sys.exit()
 
     with open(args.knn_ipkl,"rb") as f:
         while True:
@@ -64,7 +48,7 @@ if __name__=="__main__":
                 break
             for q_id,knn_id in zip(qry_ids,knn_ids):
                 print("**",qry_sents[int(q_id)])
-                for nn_id in knn_id[:5]:
-                    print("  ",all_sents[nn_id])
+                for nn_id in knn_id[:10]:
+                    print("  ",qry.get(nn_id))
                 print("\n\n\n")
 

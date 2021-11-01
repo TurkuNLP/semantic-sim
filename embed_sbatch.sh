@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=Project_2000539
-#SBATCH --time=4:15:00
+#SBATCH --time=16:15:00
 ##SBATCH --time=00:15:00
 #SBATCH --ntasks=1
 #SBATCH --mem-per-cpu=6G
@@ -21,6 +21,7 @@ PARTS=$2
 DATAIN=$3 ## some .gz with sentences
 DATAOUT=$4 ## where to store the embedded vectors
 
-zcat $DATAIN | python3 embed.py --thisjob $PART --jobs $PARTS --bert-model TurkuNLP/bert-base-finnish-cased-v1 --out $DATAOUT
+#zcat $DATAIN | python3 embed.py --thisjob $PART --jobs $PARTS --bert-model TurkuNLP/bert-base-finnish-cased-v1 --out $DATAOUT
 
+zcat $DATAIN | python3 embed_sbert.py --thisjob $PART --jobs $PARTS --bert-tokenizer TurkuNLP/bert-base-finnish-cased-v1 --sbert-model /scratch/project_2000539/pb_faiss/sbert-cased-finnish-paraphrase --out $DATAOUT
 
