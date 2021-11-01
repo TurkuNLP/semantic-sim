@@ -56,6 +56,24 @@ class SentenceDataset(IterableDataset):
     def __iter__(self):
         return self.yield_tokenized_sentences()
 
+class SentencePairDataset(SentenceDataset):
+
+    def yield_tokenized_sentences(self):
+        """bert-tokenize and encode sentences from the data, yield as dictionaries"""
+        for line_idx,sent_pair in enumerate(self.data_src):
+            if line_idx % self.jobs == self.thisjob: #this line is mine!
+                data_item={"line_idx":line_idx}
+                line_src,line_src2=sent_pair
+                tok,enc,spec_token_mask,attention_mask,token_type_id=self.prep_text_sequence(line_src)
+                data_item["enc"]=enc
+                data_item["spec_token_mask"]=spec_token_mask
+                data_item["attention_mask"]=attention_mask
+                data_item["token_type_id"]=token_type_id
+                data_item["text"]=line_src
+                data_item["text2"]=line_src2
+                yield data_item
+    
+    
 
 def collate(itemlist):
     """Receives a batch in making. It is a list of dataset items, which are themselves dictionaries with the keys as returned by the dataset
