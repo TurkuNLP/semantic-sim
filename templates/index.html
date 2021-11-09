@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  <title>SBERT retrieval demo</title>
+  </head>
+  <body>
+
+    <div class="container">
+      <h1>SBERT retrieval demo</h1>
+      <div class="row mt-3">
+	<div class="col-12">
+	  Write a sentence; the demo will retrieve the top most similar sentences from a dataset of 400 million sentences.
+	</div>
+      </div>
+      <div class="row mt-3">
+	<div class="col-12">
+	  <textarea class="form-control" placeholder="lause" id="sentencein">Tämän viikonloppuna vietetään pääsiäistä, johon kuuluu paljon perinteitä ja herkkuja.</textarea>
+	</div>
+      </div>
+      <div class="row mt-3">
+	<div class="col-3">
+	  <button type="button" class="btn btn-primary" onclick="submit_qry()">Retrieve!</button>
+	</div>
+      </div>
+
+    <div class="row mt-3">
+	<div class="col-6" id="result">
+	  
+	</div>
+	<div class="col-6">
+	  <img src="{{app_root}}/static/finbert.png" />
+	</div>
+      </div>
+
+    <div class="row mt-3">
+      <div>
+	The demo is based on the <a href="https://turkunlp.org">TurkuNLP</a> Sentence BERT model developed within the <a href="https://turkunlp.org/paraphrase.html">Turku Paraphrase project</a>
+	</div>
+      </div>
+
+    
+    </div>
+      
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+
+    <script type="text/javascript">
+
+      function show_result(ret) {
+	  $("#result").html(ret["predictions_html"])
+      }
+
+      function submit_qry() {
+	  var sentencein={};
+	  sentencein["sentencein"]=$("#sentencein").val();
+	  $.ajax({type:'POST',
+		  url:"{{app_root}}/predict",
+		  data:JSON.stringify(sentencein),
+		  contentType: "application/json",
+		  success: function (ret) {show_result(ret)},
+		  error: function(e) {console.log("error")},
+      
+		 }
+		);
+      }
+      
+    </script>
+
+  </body>
+</html>
