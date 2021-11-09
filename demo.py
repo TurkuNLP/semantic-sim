@@ -12,7 +12,7 @@ app.config["APPLICATION_ROOT"] = APP_ROOT
 
 sbert_tokenizer_name = os.environ.get("SBERT_TOKENIZER","TurkuNLP/bert-base-finnish-cased-v1")
 sbert_model_name = os.environ.get("SBERT_MODEL","/scratch/project_2000539/pb_faiss/sbert-cased-finnish-paraphrase")
-mmap_sentence_filename = os.environ.get("MMAP_SFILENAME","/scratch/project_2000539/pb_faiss/all_data_pos")
+mmap_sentence_filename = os.environ.get("MMAP_SFILENAME","/scratch/project_2000539/pb_faiss/all_data_pos_uniq")
 faiss_index_fname = os.environ.get("FAISS_IDX_FILENAME","/scratch/project_2000539/pb_faiss/faiss_index_filled_sbert.faiss")
 
 nn_qry=interactive_index.IDemoSBert(sbert_tokenizer_name,sbert_model_name,faiss_index_fname,mmap_sentence_filename)
