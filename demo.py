@@ -4,6 +4,7 @@ from flask import render_template, request
 import re
 import os
 import interactive_index
+import sys
     
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -16,6 +17,8 @@ mmap_sentence_filename = os.environ.get("MMAP_SFILENAME","/scratch/project_20005
 faiss_index_fname = os.environ.get("FAISS_IDX_FILENAME","/scratch/project_2000539/pb_faiss/faiss_index_filled_sbert.faiss")
 
 nn_qry=interactive_index.IDemoSBert(sbert_tokenizer_name,sbert_model_name,faiss_index_fname,mmap_sentence_filename)
+nn_qry.knn(["Minulla on koira"])
+print("Done loading",file=sys.stderr,flush=True)
 
 @app.route("/")
 def index():
