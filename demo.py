@@ -8,7 +8,7 @@ import sys
     
 app = Flask(__name__)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-APP_ROOT = os.environ.get("APP_ROOT","/")
+APP_ROOT = os.environ.get("APP_ROOT","")
 app.config["APPLICATION_ROOT"] = APP_ROOT
 
 sbert_tokenizer_name = os.environ.get("SBERT_TOKENIZER","TurkuNLP/bert-base-finnish-cased-v1")
@@ -28,6 +28,7 @@ def index():
 def predict():
     global nn_qry
     inpsentence=request.json["sentencein"].strip()
+    print("INP",inpsentence,file=sys.stderr,flush=True)
     res=nn_qry.knn([inpsentence])
     nearest=[]
     for sent,hits in res:
