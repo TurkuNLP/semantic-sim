@@ -5,6 +5,7 @@ import array
 import mmap
 import json
 import random
+import jsonlines
 
 class Qry:
 
@@ -33,6 +34,7 @@ class Qry:
 if __name__=="__main__":
     import argparse
     parser = argparse.ArgumentParser(description='')
+    parser.add_argument('--in-file', help='Input jsonfiles file')
     parser.add_argument('--index-lines-to', metavar="FILEPREFIX",help='Index lines from stdin, write to here. Will create FILEPREFIX.data and FILEPREFIX.index')
     parser.add_argument('--test-list', metavar="FILEPREFIX",help='Just start listing random sentences, debugging stuff')
     args = parser.parse_args()
@@ -44,16 +46,17 @@ if __name__=="__main__":
             index=array.array("L")
             lengths=array.array("I")
             write_pos=0
-            for line in tqdm.tqdm(sys.stdin):
-                line=line.rstrip("\n")
-                data=pickle.dumps(line)
-                index.append(write_pos)
-                lengths.append(len(data)) #remeber the byte position in the file and the length of the pickle
-                write_pos+=len(data)
-                f_data.write(data)
-            index.tofile(f_index)
-            lengths.tofile(f_lengths)
-            json.dump({"len":len(index)},f_meta)
+            with jsonlines.open(args.in_file) as reader:
+                for line in tqdm.tqdm(reader):
+                    line=line["string"]
+                    data=pickle.dumps(line)
+                    index.append(write_pos)
+                    lengths.append(len(data)) #remeber the byte position in the file and the length of the pickle
+                    write_pos+=len(data)
+                    f_data.write(data)
+                index.tofile(f_index)
+                lengths.tofile(f_lengths)
+                json.dump({"len":len(index)},f_meta)
                 
     elif args.test_list:
         qry=Qry(args.test_list)

@@ -1,5 +1,4 @@
 import gzip
-import itertools
 import transformers
 import torch
 import os
