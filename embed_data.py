@@ -1,3 +1,4 @@
+import jsonlines
 import gzip
 import transformers
 import torch
@@ -11,6 +12,8 @@ def open_possibly_gz_file(f_or_name):
     elif isinstance(f_or_name,str): #a file name of some sort
         if f_or_name.endswith(".gz"):
             return gzip.open(f_or_name,"rt")
+        elif f_or_name.endswith(".jsonl"):
+            return jsonlines.open(f_or_name)
         elif os.path.exists(f_or_name):
             return open(f_or_name)
         elif os.path.exists(f_or_name+".gz"):
@@ -41,7 +44,7 @@ class SentenceDataset(IterableDataset):
         """bert-tokenize and encode sentences from the data, yield as dictionaries"""
         for line_idx,line_src in enumerate(self.data_src):
             if line_idx % self.jobs == self.thisjob: #this line is mine!
-                line_src=line_src.rstrip("\n")
+                line_src=line_src["string"]
                 data_item={"line_idx":line_idx}
                 tok,enc,spec_token_mask,attention_mask,token_type_id=self.prep_text_sequence(line_src)
                 data_item["enc"]=enc
