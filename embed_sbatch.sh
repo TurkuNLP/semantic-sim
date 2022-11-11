@@ -23,5 +23,5 @@ DATAOUT=$4 ## where to store the embedded vectors
 
 #zcat $DATAIN | python3 embed.py --thisjob $PART --jobs $PARTS --bert-model TurkuNLP/bert-base-finnish-cased-v1 --out $DATAOUT
 
-zcat $DATAIN | python3 embed_sbert.py --thisjob $PART --jobs $PARTS --bert-tokenizer sentence-transformers/paraphrase-multilingual-mpnet-base-v2 --sbert-model sentence-transformers/paraphrase-multilingual-mpnet-base-v2 --out $DATAOUT
+python3 embed_sbert.py --thisjob $PART --jobs $PARTS --in-file /scratch/project_2002820/emil/ecco_faiss/ecco.jsonl --bert-tokenizer sentence-transformers/paraphrase-multilingual-mpnet-base-v2 --sbert-model sentence-transformers/paraphrase-multilingual-mpnet-base-v2 --out $DATAOUT
 
