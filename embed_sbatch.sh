@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --account=Project_2000539
-#SBATCH --time=16:15:00
+#SBATCH --time=24:00:00
 ##SBATCH --time=00:15:00
 #SBATCH --ntasks=1
 #SBATCH --mem-per-cpu=6G
@@ -11,7 +11,7 @@
 #module load python-data/3.7.6-1
 #source /projappl/project_2000539/faiss_distractors/venv-faissgpu/bin/activate
 
-module load pytorch/1.9
+module load pytorch/1.11
 
 #export TMPDIR=$LOCAL_SCRATCH
 export PYTORCH_PRETRAINED_BERT_CACHE=$TMPDIR
