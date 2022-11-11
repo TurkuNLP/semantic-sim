@@ -30,7 +30,7 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     print("Load tokenizer model",file=sys.stderr,flush=True)
-    bert_tokenizer=transformers.BertTokenizer.from_pretrained(args.bert_tokenizer)
+    bert_tokenizer=transformers.AutoTokenizer.from_pretrained(args.bert_tokenizer)
     print("Load model",file=sys.stderr,flush=True)
     sbert_model=SentenceTransformer(args.sbert_model).eval().cuda()
     print("Done loading",file=sys.stderr,flush=True)

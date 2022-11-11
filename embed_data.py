@@ -118,7 +118,7 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--bert-model", default=None, help="BERT model name or path")
     args = parser.parse_args()
-    bert_tokenizer=transformers.BertTokenizer.from_pretrained(args.bert_model)
+    bert_tokenizer=transformers.AutoTokenizer.from_pretrained(args.bert_model)
     s_dataset=SentenceDataset(sys.stdin,bert_tokenizer)
     s_datareader=DataLoader(s_dataset,collate_fn=collate,batch_size=60)
     for x in s_datareader:
