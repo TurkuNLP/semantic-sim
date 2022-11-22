@@ -9,9 +9,9 @@
 #SBATCH --cpus-per-task=4
 
 
-module load pytorch/1.9
+module load pytorch/1.11
 
-whichmodel=bert
+whichmodel=sbert
 
 DATADIR=/scratch/project_2000539/pb_faiss
 
