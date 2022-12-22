@@ -52,34 +52,31 @@ if __name__ == "__main__":
             args.BATCHFILES) == 1, "Give one argument which is a .pt file produced by --prepare-sample"
 
         quantizer = faiss.IndexFlatL2(768)
-        # 768 is bert size, 1024 is how many Voronoi cells we want, 12 is number of quantizers, and these are 8-bit
-        index = faiss.IndexIVFPQ(quantizer, 768, 1024, 12, 8)
-        res = faiss.StandardGpuResources()
-        index_gpu = faiss.index_cpu_to_gpu(res, 0, index)
+        # 768 is bert size, 1024 is how many Voronoi cells we want,
+        # 48 is number of quantizers, and these are 8-bit
+        index = faiss.IndexIVFPQ(quantizer, 768, 1024, 48, 8)
 
         sampled_vectors = torch.load(args.BATCHFILES[0])
         print("Training on", sampled_vectors.shape, "vectors", flush=True)
 
         # how comes this doesnt take any time at all ...?
-        index_gpu.train(sampled_vectors.numpy())
+        index.train(sampled_vectors.numpy())
         print("Done training", flush=True)
-        trained_index = faiss.index_gpu_to_cpu(index_gpu)
+        trained_index = index
         faiss.write_index(trained_index, args.train_faiss)
     elif args.fill_faiss:
         index = faiss.read_index(args.pretrained_index)
-        res = faiss.StandardGpuResources()
-        index_gpu = faiss.index_cpu_to_gpu(res, 0, index)
         all_batches = list(sorted(args.BATCHFILES))
         for batchfile in tqdm.tqdm(all_batches):
             with open(batchfile, "rb") as f:
                 while True:
                     try:
                         line_idx, embedded_batch = pickle.load(f)
-                        index_gpu.add_with_ids(
+                        index.add_with_ids(
                             embedded_batch.numpy(), line_idx.numpy())
                     except EOFError:
                         break  # no more batches in this file
 
-        index_filled = faiss.index_gpu_to_cpu(index_gpu)
+        index_filled = index
         faiss.write_index(index_filled, args.fill_faiss)
         print("Index has", index_filled.ntotal, "vectors. Done.")
