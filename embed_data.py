@@ -50,7 +50,7 @@ class SentenceDataset(IterableDataset):
         """bert-tokenize and encode sentences from the data, yield as dictionaries"""
         for line_idx, line_src in enumerate(self.data_src):
             if line_idx % self.jobs == self.thisjob:  # this line is mine!
-                line_src = line_src["string"]
+                line_src = line_src["text"]
                 data_item = {"line_idx": line_idx}
                 tok, enc, spec_token_mask, attention_mask, token_type_id = self.prep_text_sequence(
                     line_src)
