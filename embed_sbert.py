@@ -21,6 +21,7 @@ def embed_batch(batch,sbert_model):
 if __name__=="__main__":
     import argparse
     parser = argparse.ArgumentParser()
+    parser.add_argument("--in-file", default=None, help="Input file(jsonlines)")
     parser.add_argument("--bert-tokenizer", default=None, help="BERT tokenizer name or path")
     parser.add_argument("--sbert-model", default=None, help="SBERT model name or path")
     parser.add_argument("--out",default=None,help="File to save batches into")
@@ -29,12 +30,12 @@ if __name__=="__main__":
     args = parser.parse_args()
 
     print("Load tokenizer model",file=sys.stderr,flush=True)
-    bert_tokenizer=transformers.BertTokenizer.from_pretrained(args.bert_tokenizer)
+    bert_tokenizer=transformers.AutoTokenizer.from_pretrained(args.bert_tokenizer)
     print("Load model",file=sys.stderr,flush=True)
     sbert_model=SentenceTransformer(args.sbert_model).eval().cuda()
     print("Done loading",file=sys.stderr,flush=True)
     
-    s_dataset=embed_data.SentenceDataset(sys.stdin,bert_tokenizer,args.thisjob,args.jobs)
+    s_dataset=embed_data.SentenceDataset(args.in_file,bert_tokenizer,args.thisjob,args.jobs)
     print("Done creating dataset",file=sys.stderr, flush=True)
     s_datareader=embed_data.fluid_batch(s_dataset,12000)#DataLoader(sp_dataset,collate_fn=embed_data.collate,batch_size=15)
 
